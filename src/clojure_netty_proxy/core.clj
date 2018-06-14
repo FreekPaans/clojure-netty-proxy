@@ -32,10 +32,11 @@
       (childOption ChannelOption/AUTO_READ false)
       (childOption ChannelOption/AUTO_CLOSE false)))
 
-(defn start-server [handlers-factory]
+(defn start-server
+  [port handlers-factory]
   (let [event-loop-group (NioEventLoopGroup.)
         bootstrap (init-server-bootstrap event-loop-group handlers-factory)
-        channel (.. bootstrap (bind 9007) (sync) (channel))]
+        channel (.. bootstrap (bind port) (sync) (channel))]
     (-> channel
         .closeFuture
         (.addListener
@@ -120,12 +121,15 @@
 
 (comment
   (defonce servers (atom []))
-  (.close (last @servers))
-  (swap! servers conj (start-server (fn [] 
-                                      [
-                                      (LoggingHandler. "proxy" LogLevel/INFO)
-                                       (proxy-handler "www.freekpaans.nl" 80)
-                                       ] )))
+  (some-> @servers last .close)
+  (swap! servers conj (start-server 9007 (fn [] 
+                                           [
+                                            (LoggingHandler. "proxy" LogLevel/INFO)
+                                            (proxy-handler "www.freekpaans.nl" 80)
+                                            ] )))
   (doseq [s @servers]
     (.close s))
+
+
+
     )
