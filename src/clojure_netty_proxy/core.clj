@@ -121,7 +121,7 @@
 
 (comment
   (defonce servers (atom []))
-  (.close (last @servers))
+  (some-> @servers last .close)
   (swap! servers conj (start-server 9007 (fn [] 
                                            [
                                             (LoggingHandler. "proxy" LogLevel/INFO)
@@ -129,4 +129,7 @@
                                             ] )))
   (doseq [s @servers]
     (.close s))
+
+
+
     )
